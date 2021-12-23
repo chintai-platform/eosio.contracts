@@ -202,7 +202,6 @@ namespace eosiosystem {
     asset      total_rent;
     asset      total_lendable;
     asset      total_rex;
-    asset      namebid_proceeds;
     uint64_t   loan_num = 0;
 
     uint64_t primary_key()const { return 0; }
