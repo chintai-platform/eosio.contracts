@@ -94,36 +94,6 @@ namespace eosiosystem {
    *    and users to rent CPU and Network resources in return for a market-determined fee.
    */
   
-   // A name bid, which consists of:
-   // - a `newname` name that the bid is for
-   // - a `high_bidder` account name that is the one with the highest bid so far
-   // - the `high_bid` which is amount of highest bid
-   // - and `last_bid_time` which is the time of the highest bid
-   struct [[eosio::table, eosio::contract("eosio.system")]] name_bid {
-     name            newname;
-     name            high_bidder;
-     int64_t         high_bid = 0; ///< negative high_bid == closed auction waiting to be claimed
-     time_point      last_bid_time;
-
-     uint64_t primary_key()const { return newname.value;                    }
-     uint64_t by_high_bid()const { return static_cast<uint64_t>(-high_bid); }
-   };
-
-   // A bid refund, which is defined by:
-   // - the `bidder` account name owning the refund
-   // - the `amount` to be refunded
-   struct [[eosio::table, eosio::contract("eosio.system")]] bid_refund {
-      name         bidder;
-      asset        amount;
-
-      uint64_t primary_key()const { return bidder.value; }
-   };
-   typedef eosio::multi_index< "namebids"_n, name_bid,
-                               indexed_by<"highbid"_n, const_mem_fun<name_bid, uint64_t, &name_bid::by_high_bid>  >
-                             > name_bid_table;
-
-   typedef eosio::multi_index< "bidrefunds"_n, bid_refund > bid_refund_table;
-
    // Defines new global state parameters.
    struct [[eosio::table("global"), eosio::contract("eosio.system")]] eosio_global_state : eosio::blockchain_parameters {
       uint64_t free_ram()const { return max_ram_size - total_ram_bytes_reserved; }
@@ -143,45 +113,25 @@ namespace eosiosystem {
       double               total_producer_vote_weight = 0; /// the sum of all producer votes
       block_timestamp      last_name_close;
 
-      // explicit serialization macro is not necessary, used here only to improve compilation time
-      EOSLIB_SERIALIZE_DERIVED( eosio_global_state, eosio::blockchain_parameters,
-                                (max_ram_size)(total_ram_bytes_reserved)(total_ram_stake)
-                                (last_producer_schedule_update)(last_pervote_bucket_fill)
-                                (pervote_bucket)(perblock_bucket)(total_unpaid_blocks)(total_activated_stake)(thresh_activated_stake_time)
-                                (last_producer_schedule_size)(total_producer_vote_weight)(last_name_close) )
-   };
-
-   // Defines new global state parameters added after version 1.0
-   struct [[eosio::table("global2"), eosio::contract("eosio.system")]] eosio_global_state2 {
-      eosio_global_state2(){}
-
       uint16_t          new_ram_per_block = 0;
       block_timestamp   last_ram_increase;
       block_timestamp   last_block_num; /* deprecated */
       double            total_producer_votepay_share = 0;
       uint8_t           revision = 0; ///< used to track version updates in the future.
 
-      EOSLIB_SERIALIZE( eosio_global_state2, (new_ram_per_block)(last_ram_increase)(last_block_num)
-                        (total_producer_votepay_share)(revision) )
-   };
-
-   // Defines new global state parameters added after version 1.3.0
-   struct [[eosio::table("global3"), eosio::contract("eosio.system")]] eosio_global_state3 {
-      eosio_global_state3() { }
       time_point        last_vpay_state_update;
       double            total_vpay_share_change_rate = 0;
 
-      EOSLIB_SERIALIZE( eosio_global_state3, (last_vpay_state_update)(total_vpay_share_change_rate) )
-   };
-
-   // Defines new global state parameters to store inflation rate and distribution
-   struct [[eosio::table("global4"), eosio::contract("eosio.system")]] eosio_global_state4 {
-      eosio_global_state4() { }
       double   continuous_rate;
       int64_t  inflation_pay_factor;
       int64_t  votepay_factor;
-
-      EOSLIB_SERIALIZE( eosio_global_state4, (continuous_rate)(inflation_pay_factor)(votepay_factor) )
+      // explicit serialization macro is not necessary, used here only to improve compilation time
+      EOSLIB_SERIALIZE_DERIVED( eosio_global_state, eosio::blockchain_parameters,
+                                (max_ram_size)(total_ram_bytes_reserved)(total_ram_stake)
+                                (last_producer_schedule_update)(last_pervote_bucket_fill)
+                                (pervote_bucket)(perblock_bucket)(total_unpaid_blocks)(total_activated_stake)(thresh_activated_stake_time)
+                                (last_producer_schedule_size)(total_producer_vote_weight)(last_name_close)(new_ram_per_block)(last_ram_increase)(last_block_num)
+                        (total_producer_votepay_share)(revision)(last_vpay_state_update)(total_vpay_share_change_rate)(continuous_rate)(inflation_pay_factor)(votepay_factor) )
    };
 
    inline eosio::block_signing_authority convert_to_block_signing_authority( const eosio::public_key& producer_key ) {
