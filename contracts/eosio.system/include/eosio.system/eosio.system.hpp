@@ -138,15 +138,7 @@ namespace eosiosystem {
       return eosio::block_signing_authority_v0{ .threshold = 1, .keys = {{producer_key, 1}} };
    }
 
-
    typedef eosio::singleton< "global"_n, eosio_global_state >   global_state_singleton;
-
-   typedef eosio::singleton< "global2"_n, eosio_global_state2 > global_state2_singleton;
-
-   typedef eosio::singleton< "global3"_n, eosio_global_state3 > global_state3_singleton;
-
-   typedef eosio::singleton< "global4"_n, eosio_global_state4 > global_state4_singleton;
-
    struct [[eosio::table, eosio::contract("eosio.system")]] user_resources {
       name          owner;
       asset         net_weight;
